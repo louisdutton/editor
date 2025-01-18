@@ -9,6 +9,5 @@ license.workspace = true
 rust-version.workspace = true
 categories.workspace = true
 repository.workspace = true
-homepage.workspace = true
 
 [dependencies]
