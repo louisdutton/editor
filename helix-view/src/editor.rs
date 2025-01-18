@@ -246,8 +246,6 @@ where
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case", default, deny_unknown_fields)]
 pub struct Config {
-    /// Vim keybindings and behavior. Defaults to true.
-    pub evil: bool,
     /// Padding to keep between the edge of the screen and the cursor when scrolling. Defaults to 5.
     pub scrolloff: usize,
     /// Number of lines to scroll at once. Defaults to 3
@@ -335,14 +333,14 @@ pub struct Config {
     pub bufferline: BufferLine,
     /// Vertical indent width guides.
     pub indent_guides: IndentGuidesConfig,
-    /// Whether to color modes with different colors. Defaults to `false`.
+    /// Whether to color modes with different colors. Defaults to `true`.
     pub color_modes: bool,
     pub soft_wrap: SoftWrap,
     /// Workspace specific lsp ceiling dirs
     pub workspace_lsp_roots: Vec<PathBuf>,
     /// Which line ending to choose for new documents. Defaults to `native`. i.e. `crlf` on Windows, otherwise `lf`.
     pub default_line_ending: LineEndingConfig,
-    /// Whether to automatically insert a trailing line-ending on write if missing. Defaults to `true`.
+    /// Whether to automatically insert a trailing line-ending on write if missing. Defaults to `false`.
     pub insert_final_newline: bool,
     /// Enables smart tab
     pub smart_tab: Option<SmartTabConfig>,
@@ -373,15 +371,6 @@ pub struct SmartTabConfig {
 
 impl Default for SmartTabConfig {
     fn default() -> Self {
-        SmartTabConfig {
-            enable: true,
-            supersede_menu: false,
-        }
-    }
-}
-
-impl SmartTabConfig {
-    pub fn default_evil() -> Self {
         SmartTabConfig {
             enable: false,
             supersede_menu: false,
@@ -502,32 +491,6 @@ impl Default for StatusLineConfig {
         use StatusLineElement as E;
 
         Self {
-            left: vec![
-                E::Mode,
-                E::Spinner,
-                E::FileName,
-                E::ReadOnlyIndicator,
-                E::FileModificationIndicator,
-            ],
-            center: vec![],
-            right: vec![
-                E::Diagnostics,
-                E::Selections,
-                E::Register,
-                E::Position,
-                E::FileEncoding,
-            ],
-            separator: String::from("│"),
-            mode: ModeConfig::default(),
-        }
-    }
-}
-
-impl StatusLineConfig {
-    pub fn default_evil() -> Self {
-        use StatusLineElement as E;
-
-        Self {
             left: vec![E::Mode, E::Spacer, E::VersionControl, E::Spacer, E::Spinner],
             center: vec![
                 E::FileName,
@@ -543,7 +506,7 @@ impl StatusLineConfig {
                 E::FileType,
             ],
             separator: String::from("│"),
-            mode: ModeConfig::default_evil(),
+            mode: ModeConfig::default(),
         }
     }
 }
@@ -558,16 +521,6 @@ pub struct ModeConfig {
 
 impl Default for ModeConfig {
     fn default() -> Self {
-        Self {
-            normal: String::from("NOR"),
-            insert: String::from("INS"),
-            select: String::from("SEL"),
-        }
-    }
-}
-
-impl ModeConfig {
-    pub fn default_evil() -> Self {
         Self {
             normal: String::from("NOR"),
             insert: String::from("INS"),
@@ -993,7 +946,6 @@ pub enum PopupBorderConfig {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            evil: false,
             scrolloff: 5,
             scroll_lines: 3,
             mouse: true,
@@ -1030,7 +982,7 @@ impl Default for Config {
             whitespace: WhitespaceConfig::default(),
             bufferline: BufferLine::default(),
             indent_guides: IndentGuidesConfig::default(),
-            color_modes: false,
+            color_modes: true,
             soft_wrap: SoftWrap {
                 enable: Some(false),
                 ..SoftWrap::default()
@@ -1040,7 +992,7 @@ impl Default for Config {
             continue_comments: true,
             workspace_lsp_roots: Vec::new(),
             default_line_ending: LineEndingConfig::default(),
-            insert_final_newline: true,
+            insert_final_newline: false,
             smart_tab: Some(SmartTabConfig::default()),
             popup_border: PopupBorderConfig::None,
             indent_heuristic: IndentationHeuristic::default(),
@@ -1049,18 +1001,6 @@ impl Default for Config {
             end_of_line_diagnostics: DiagnosticFilter::Disable,
             clipboard_provider: ClipboardProvider::default(),
         }
-    }
-}
-
-impl Config {
-    pub fn default_evil() -> Self {
-        let mut config = Config::default();
-        config.evil = true;
-        config.statusline = StatusLineConfig::default_evil();
-        config.color_modes = true;
-        config.insert_final_newline = false;
-        config.smart_tab = Some(SmartTabConfig::default_evil());
-        return config;
     }
 }
 
@@ -1089,8 +1029,6 @@ pub struct Breakpoint {
 use futures_util::stream::{Flatten, Once};
 
 pub struct Editor {
-    pub evil: bool,
-
     /// Current editing mode.
     pub mode: Mode,
     pub tree: Tree,
@@ -1243,7 +1181,6 @@ impl Editor {
         area.height -= 1;
 
         Self {
-            evil: conf.evil,
             mode: Mode::Normal,
             tree: Tree::new(area),
             next_document_id: DocumentId::default(),

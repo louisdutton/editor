@@ -16,7 +16,6 @@ use std::{
 };
 
 pub use default::default;
-pub use default::default_evil;
 use macros::key;
 
 #[derive(Debug, Clone, Default)]
